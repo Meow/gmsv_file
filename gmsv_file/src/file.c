@@ -113,5 +113,5 @@ int file_mkdir(const char *dirname) {
   char *fn = (char*)dirname;
   setup_directory(&fn);
 
-  return mkdir(fn) == 0 ? 1 : 0;
+  return _create_directory(fn) == 0 ? 1 : 0;
 }
