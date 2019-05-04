@@ -1,8 +1,20 @@
 #include "file.h"
 
+int _create_directory(const char *dirname);
+
 #ifdef _WIN32
 extern int getcwd(char *buf, size_t size);
 extern int mkdir(const char *dirname);
+
+int _create_directory(const char *dirname) {
+  return mkdir(dirname);
+}
+#else
+int _create_directory(const char *dirname) {
+  struct stat st = {0};
+  if (stat(dirname, &st) == -1)
+    return mkdir(dirname, 0777);
+}
 #endif
 
 char* concat(const char *s1, const char *s2) {

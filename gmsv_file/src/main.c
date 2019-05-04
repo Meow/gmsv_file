@@ -9,8 +9,15 @@
 #include <gmodc/lua/interface.h>
 #include "file.h"
 
-LUA_FUNCTION(l_file_new) {
-  lua_push_string(LUA, "not implemented", 0);
+LUA_FUNCTION(l_file_open) {
+  FILE *f;
+
+  lua_check_type(LUA, 1, TYPE_STRING);
+  lua_check_type(LUA, 2, TYPE_STRING);
+
+  f = fopen(lua_get_string(LUA, 1, 0), lua_get_string(LUA, 2, 0));
+
+  lua_push_userdata(LUA, f);
 
   return 1;
 }
@@ -85,7 +92,7 @@ GMOD_MODULE_OPEN() {
 
   lua_reference_push(LUA, file_r);
   lua_push_string(LUA, "open", 0);
-  lua_push_cfunc(LUA, l_file_new);
+  lua_push_cfunc(LUA, l_file_open);
   lua_set_table(LUA, -3);
 
   lua_reference_push(LUA, file_r);
