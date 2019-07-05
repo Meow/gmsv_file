@@ -28,9 +28,10 @@ LUA_FUNCTION(l_file_write) {
   lua_check_type(LUA, 1, TYPE_STRING);
   lua_check_type(LUA, 2, TYPE_STRING);
 
-  contents = (char*)lua_get_string(LUA, 2, NULL);
+  contents = (char *)lua_get_string(LUA, 2, NULL);
 
-  lua_push_bool(LUA, file_write(lua_get_string(LUA, 1, NULL), contents, strlen(contents)));
+  lua_push_bool(LUA, file_write(lua_get_string(LUA, 1, NULL), contents,
+                                strlen(contents)));
 
   return 1;
 }
@@ -41,9 +42,10 @@ LUA_FUNCTION(l_file_append) {
   lua_check_type(LUA, 1, TYPE_STRING);
   lua_check_type(LUA, 2, TYPE_STRING);
 
-  contents = (char*)lua_get_string(LUA, 2, NULL);
+  contents = (char *)lua_get_string(LUA, 2, NULL);
 
-  lua_push_bool(LUA, file_append(lua_get_string(LUA, 1, NULL), contents, strlen(contents)));
+  lua_push_bool(LUA, file_append(lua_get_string(LUA, 1, NULL), contents,
+                                 strlen(contents)));
 
   return 1;
 }
@@ -59,7 +61,7 @@ LUA_FUNCTION(l_file_read) {
   }
 
   lua_push_string(LUA, buffer, 0);
-  
+
   free(buffer);
 
   return 1;
@@ -131,6 +133,4 @@ GMOD_MODULE_OPEN() {
   return 0;
 }
 
-GMOD_MODULE_CLOSE() {
-  return 0;
-}
+GMOD_MODULE_CLOSE() { return 0; }

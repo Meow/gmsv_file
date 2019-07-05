@@ -6,9 +6,7 @@ int _create_directory(const char *dirname);
 extern int getcwd(char *buf, size_t size);
 extern int mkdir(const char *dirname);
 
-int _create_directory(const char *dirname) {
-  return mkdir(dirname);
-}
+int _create_directory(const char *dirname) { return mkdir(dirname); }
 #else
 int _create_directory(const char *dirname) {
   struct stat st = {0};
@@ -17,7 +15,7 @@ int _create_directory(const char *dirname) {
 }
 #endif
 
-char* concat(const char *s1, const char *s2) {
+char *concat(const char *s1, const char *s2) {
   char *result = malloc(strlen(s1) + strlen(s2) + 1);
   strcpy(result, s1);
   strcat(result, s2);
@@ -34,7 +32,7 @@ void setup_directory(char **directory) {
 
 int file_write(const char *filename, void *data, size_t len) {
   FILE *f;
-  char *fn = (char*)filename;
+  char *fn = (char *)filename;
 
   setup_directory(&fn);
 
@@ -52,7 +50,7 @@ int file_write(const char *filename, void *data, size_t len) {
 
 int file_append(const char *filename, void *data, size_t len) {
   FILE *f;
-  char *fn = (char*)filename;
+  char *fn = (char *)filename;
 
   setup_directory(&fn);
 
@@ -72,7 +70,7 @@ int file_append(const char *filename, void *data, size_t len) {
 int file_read(const char *filename, char **out) {
   FILE *f;
   int len;
-  char *buf, *fn = (char*)filename;
+  char *buf, *fn = (char *)filename;
 
   setup_directory(&fn);
 
@@ -85,7 +83,7 @@ int file_read(const char *filename, char **out) {
   fseek(f, 0L, SEEK_END);
   len = ftell(f);
   fseek(f, 0L, SEEK_SET);
-  buf = (char*)malloc(len + 1);
+  buf = (char *)malloc(len + 1);
 
   if (!buf) {
     fclose(f);
@@ -103,14 +101,14 @@ int file_read(const char *filename, char **out) {
 }
 
 int file_delete(const char *filename) {
-  char *fn = (char*)filename;
+  char *fn = (char *)filename;
   setup_directory(&fn);
 
   return remove(fn) == 0 ? 1 : 0;
 }
 
 int file_mkdir(const char *dirname) {
-  char *fn = (char*)dirname;
+  char *fn = (char *)dirname;
   setup_directory(&fn);
 
   return _create_directory(fn) == 0 ? 1 : 0;
