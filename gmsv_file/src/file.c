@@ -8,6 +8,8 @@ extern int mkdir(const char *dirname);
 extern int access(const char *name, int mode);
 extern char *strrchr(const char *str, int needle);
 
+#define F_OK 0
+
 int _create_directory(const char *dirname) { return mkdir(dirname); }
 #else
 int _create_directory(const char *dirname) {
