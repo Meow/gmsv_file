@@ -5,6 +5,8 @@ int _create_directory(const char *dirname);
 #ifdef _WIN32
 extern int getcwd(char *buf, size_t size);
 extern int mkdir(const char *dirname);
+extern int access(const char *name, int mode);
+extern char *strrchr(const char *str, int needle);
 
 int _create_directory(const char *dirname) { return mkdir(dirname); }
 #else
@@ -14,6 +16,54 @@ int _create_directory(const char *dirname) {
     return mkdir(dirname, 0777);
 }
 #endif
+
+int create_folders_recursive(const char *fn) {
+  char buf[64];
+  int i, p = 0;
+
+  for (i = 0; i < strlen(fn); i++) {
+    buf[p] = fn[i];
+    p++;
+
+    switch (fn[i]) {
+    case '/':
+    case 0:
+      buf[p] = 0;
+      if (access(buf, F_OK) == -1) {
+        if (_create_directory(buf) != 0) {
+          return 0;
+        }
+      }
+    }
+  }
+
+  return _create_directory(fn) == 0 ? 1 : 0;
+}
+
+int find_last_occurence(const char *str, const char ch) {
+  char *chr = strrchr(str, ch);
+
+  if (chr != NULL)
+    return chr - str;
+  return -1;
+}
+
+int setup_directory_for_write(const char *fn) {
+  char target_name[256];
+  int i, pos = find_last_occurence(fn, '/');
+
+  if (pos != -1) {
+    for (i = 0; i <= pos; i++) {
+      target_name[i] = fn[i];
+    }
+
+    target_name[pos + 1] = 0;
+
+    return create_folders_recursive(target_name);
+  }
+
+  return 0;
+}
 
 char *concat(const char *s1, const char *s2) {
   char *result = malloc(strlen(s1) + strlen(s2) + 1);
@@ -69,6 +119,9 @@ int file_write(const char *filename, void *data, size_t len) {
 
   fn = (char *)filename;
   setup_directory(&fn);
+
+  if (!setup_directory_for_write(fn))
+    return 0;
 
   f = fopen(fn, "wb");
 
@@ -157,5 +210,5 @@ int file_mkdir(const char *dirname) {
 
   setup_directory(&fn);
 
-  return _create_directory(fn) == 0 ? 1 : 0;
+  return create_folders_recursive(fn);
 }
