@@ -22,6 +22,37 @@ char *concat(const char *s1, const char *s2) {
   return result;
 }
 
+int check_filename(const char *fn) {
+  int i;
+  char prev = 0;
+
+  switch (fn[0]) {
+  case '/':
+  case '~':
+    return 0;
+  }
+
+  for (i = 0; i < strlen(fn); i++) {
+    switch (fn[i]) {
+    case '\b':
+    case '\r':
+    case ':':
+    case '\\':
+    case '$':
+    case '~':
+    case '%':
+      return 0;
+    };
+
+    if (fn[i] == '.' && prev == '.')
+      return 0;
+
+    prev = fn[i];
+  }
+
+  return 1;
+}
+
 void setup_directory(char **directory) {
   char current_folder[256], *result;
   getcwd(current_folder, sizeof(current_folder));
@@ -32,8 +63,11 @@ void setup_directory(char **directory) {
 
 int file_write(const char *filename, void *data, size_t len) {
   FILE *f;
-  char *fn = (char *)filename;
+  char *fn;
 
+  if (!check_filename(filename)) return 0;
+
+  fn = (char *)filename;
   setup_directory(&fn);
 
   f = fopen(fn, "wb");
@@ -50,8 +84,11 @@ int file_write(const char *filename, void *data, size_t len) {
 
 int file_append(const char *filename, void *data, size_t len) {
   FILE *f;
-  char *fn = (char *)filename;
+  char *fn;
 
+  if (!check_filename(filename)) return 0;
+
+  fn = (char *)filename;
   setup_directory(&fn);
 
   f = fopen(fn, "ab");
@@ -70,8 +107,11 @@ int file_append(const char *filename, void *data, size_t len) {
 int file_read(const char *filename, char **out) {
   FILE *f;
   int len;
-  char *buf, *fn = (char *)filename;
+  char *buf, *fn;
 
+  if (!check_filename(filename)) return 0;
+
+  fn = (char *)filename;
   setup_directory(&fn);
 
   f = fopen(fn, "rb");
@@ -102,6 +142,9 @@ int file_read(const char *filename, char **out) {
 
 int file_delete(const char *filename) {
   char *fn = (char *)filename;
+
+  if (!check_filename(filename)) return 0;
+
   setup_directory(&fn);
 
   return remove(fn) == 0 ? 1 : 0;
@@ -109,6 +152,9 @@ int file_delete(const char *filename) {
 
 int file_mkdir(const char *dirname) {
   char *fn = (char *)dirname;
+
+  if (!check_filename(dirname)) return 0;
+
   setup_directory(&fn);
 
   return _create_directory(fn) == 0 ? 1 : 0;
