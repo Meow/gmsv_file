@@ -30,6 +30,11 @@ workspace 'file'
     linkoptions{ '-static-libstdc++', '-static-libgcc' }
   elseif is_windows then
     staticruntime 'on'
+
+    -- MinGW ignores staticruntime, so its runtime libraries are named here.
+    filter 'action:gmake*'
+      linkoptions { '-static', '-static-libstdc++', '-static-libgcc' }
+    filter {}
   end
 
   filter "configurations:x86"

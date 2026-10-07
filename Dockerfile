@@ -42,6 +42,16 @@ RUN premake5 --os=windows gmake \
       CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ AR=x86_64-w64-mingw32-ar \
  && cp bin/*.dll /out/
 
+# Everything is linked statically except what cannot be: the C library on
+# Linux, kernel32 and msvcrt on Windows. Fail on any other dynamic dependency.
+RUN for f in /out/*.dll; do \
+      objdump -p "$f" > /tmp/headers || exit 1; \
+      awk -v f="${f##*/}" '/NEEDED|DLL Name:/ { print f ": " $NF }' /tmp/headers; \
+    done > /tmp/deps \
+ && cat /tmp/deps \
+ && ! grep -viE ': (libc\.so\.6|kernel32\.dll|msvcrt\.dll)$' /tmp/deps \
+ && rm /tmp/headers /tmp/deps
+
 RUN upx --best /out/*.dll
 
 FROM scratch
