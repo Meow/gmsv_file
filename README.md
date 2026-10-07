@@ -38,6 +38,12 @@ File.delete(filename)
 -- @return[Boolean success]
 File.mkdir(directory)
 
+--- Opens a file and returns a handle to it, or false if it could not be opened.
+-- Mode is one of "r", "w" or "a", optionally followed by "b" and/or "+".
+-- Does not create missing folders.
+-- @return[FileHandle handle]
+File.open(filename, mode)
+
 --- Reads specified file.
 -- @return[String contents]
 File.read(filename)
@@ -45,4 +51,16 @@ File.read(filename)
 --- Writes contents to file. Overwrites existing contents.
 -- @return[Boolean success]
 File.write(filename, contents)
+
+--- Reads everything from the current position to the end of the file.
+-- @return[String contents]
+handle:read()
+
+--- Writes contents at the current position.
+-- @return[Boolean success]
+handle:write(contents)
+
+--- Closes the file. Handles that are never closed are closed when garbage collected.
+-- @return[Boolean success]
+handle:close()
 ```

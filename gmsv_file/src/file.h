@@ -13,6 +13,9 @@
 #include <unistd.h>
 #endif
 
+FILE *file_open(const char *filename, const char *mode);
+int file_handle_read(FILE *f, char **buffer, size_t *len);
+int file_handle_write(FILE *f, const void *data, size_t len);
 int file_write(const char *filename, void *data, size_t len);
 int file_append(const char *filename, void *data, size_t len);
 int file_read(const char *filename, char **buffer);
