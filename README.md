@@ -20,6 +20,8 @@ A simple file i/o library for Garry's Mod written in ANSI C.
 
 Building the `x86` configuration on a 64-bit Linux host requires a multilib toolchain (e.g. `gcc-multilib` and `g++-multilib` on Debian/Ubuntu).
 
+Alternatively, if you have Docker installed, just run `./build.sh`. It builds the binaries for all four platforms in a container, with no other tools needed on your machine, and places them in the `gmsv_file/bin` folder.
+
 ## Using
 The module provides barebones functionality for file manipulation. It's being worked on, more features are coming soon!
 (All functions are relative to `garrysmod/` folder!!)
