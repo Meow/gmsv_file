@@ -12,11 +12,7 @@ extern char *strrchr(const char *str, int needle);
 
 int _create_directory(const char *dirname) { return mkdir(dirname); }
 #else
-int _create_directory(const char *dirname) {
-  struct stat st = {0};
-  if (stat(dirname, &st) == -1)
-    return mkdir(dirname, 0777);
-}
+int _create_directory(const char *dirname) { return mkdir(dirname, 0777); }
 #endif
 
 int create_folders_recursive(const char *fn) {
@@ -38,6 +34,9 @@ int create_folders_recursive(const char *fn) {
       }
     }
   }
+
+  if (access(fn, F_OK) == 0)
+    return 1;
 
   return _create_directory(fn) == 0 ? 1 : 0;
 }
@@ -211,6 +210,9 @@ int file_mkdir(const char *dirname) {
   if (!check_filename(dirname)) return 0;
 
   setup_directory(&fn);
+
+  if (access(fn, F_OK) == 0)
+    return 0;
 
   return create_folders_recursive(fn);
 }

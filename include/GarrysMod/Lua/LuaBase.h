@@ -2,33 +2,36 @@
 #define GARRYSMOD_LUA_LUABASE_H
 
 #include <stddef.h>
+#include <type_traits>
 
+#include "SourceCompat.h"
 #include "Types.h"
 #include "UserData.h"
-#include "SourceCompat.h"
 
 struct lua_State;
 
-namespace GarrysMod
-{
-namespace Lua
-{
+namespace GarrysMod {
+namespace Lua {
 typedef int (*CFunc)(lua_State *L);
 
 //
 // Use this to communicate between C and Lua
 //
-class ILuaBase
-{
+class ILuaBase {
 public:
   // You shouldn't need to use this struct
   // Instead, use the UserType functions
-  struct UserData
-  {
+  struct UserData {
     void *data;
-    unsigned char type;
+    unsigned char type; // Change me to a uint32 one day
   };
 
+protected:
+  template <class T> struct UserData_Value : UserData {
+    T value;
+  };
+
+public:
   // Returns the amount of values on the stack
   virtual int Top(void) = 0;
 
@@ -41,6 +44,7 @@ public:
   // Pushes table[key] on to the stack
   // table = value at iStackPos
   // key   = value at top of the stack
+  // Pops the key from the stack
   virtual void GetTable(int iStackPos) = 0;
 
   // Pushes table[key] on to the stack
@@ -63,7 +67,8 @@ public:
   // Pops the key and the value from the stack
   virtual void SetTable(int iStackPos) = 0;
 
-  // Sets the metatable for the value at iStackPos to the value at the top of the stack
+  // Sets the metatable for the value at iStackPos to the value at the top of
+  // the stack
   // Pops the value off of the top of the stack
   virtual void SetMetaTable(int iStackPos) = 0;
 
@@ -73,8 +78,10 @@ public:
 
   // Calls a function
   // To use it: Push the function on to the stack followed by each argument
-  // Pops the function and arguments from the stack, leaves iResults values on the stack
-  // If this function errors, any local C values will not have their destructors called!
+  // Pops the function and arguments from the stack, leaves iResults values on
+  // the stack
+  // If this function errors, any local C values will not have their destructors
+  // called!
   virtual void Call(int iArgs, int iResults) = 0;
 
   // Similar to Call
@@ -101,23 +108,26 @@ public:
   virtual int Next(int iStackPos) = 0;
 
 #ifndef GMOD_ALLOW_DEPRECATED
-private:
+protected:
 #endif
   // Deprecated: Use the UserType functions instead of this
   virtual void *NewUserdata(unsigned int iSize) = 0;
 
 public:
   // Throws an error and ceases execution of the function
-  // If this function is called, any local C values will not have their destructors called!
+  // If this function is called, any local C values will not have their
+  // destructors called!
   virtual void ThrowError(const char *strError) = 0;
 
   // Checks that the type of the value at iStackPos is iType
   // Throws and error and ceases execution of the function otherwise
-  // If this function errors, any local C values will not have their destructors called!
+  // If this function errors, any local C values will not have their destructors
+  // called!
   virtual void CheckType(int iStackPos, int iType) = 0;
 
   // Throws a pretty error message about the given argument
-  // If this function is called, any local C values will not have their destructors called!
+  // If this function is called, any local C values will not have their
+  // destructors called!
   virtual void ArgError(int iArgNum, const char *strMessage) = 0;
 
   // Pushes table[key] on to the stack
@@ -133,10 +143,12 @@ public:
   // Does not invoke metamethods
   virtual void RawSet(int iStackPos) = 0;
 
-  // Returns the string at iStackPos. iOutLen is set to the length of the string if it is not NULL
+  // Returns the string at iStackPos. iOutLen is set to the length of the string
+  // if it is not NULL
   // If the value at iStackPos is a number, it will be converted in to a string
   // Returns NULL upon failure
-  virtual const char *GetString(int iStackPos = -1, unsigned int *iOutLen = NULL) = 0;
+  virtual const char *GetString(int iStackPos = -1,
+                                unsigned int *iOutLen = NULL) = 0;
 
   // Returns the number at iStackPos
   // Returns 0 upon failure
@@ -151,9 +163,10 @@ public:
   virtual CFunc GetCFunction(int iStackPos = -1) = 0;
 
 #ifndef GMOD_ALLOW_DEPRECATED
-private:
+protected:
 #endif
-  // Deprecated: You should probably be using the UserType functions instead of this
+  // Deprecated: You should probably be using the UserType functions instead of
+  // this
   virtual void *GetUserdata(int iStackPos = -1) = 0;
 
 public:
@@ -177,9 +190,13 @@ public:
   // See: GetUpvalueIndex()
   virtual void PushCClosure(CFunc val, int iVars) = 0;
 
-  // Pushes the given pointer on to the stack as light-userdata
+#ifndef GMOD_ALLOW_DEPRECATED
+protected:
+#endif
+  // Deprecated: Don't use light userdata in GMod
   virtual void PushUserdata(void *) = 0;
 
+public:
   // Allows for values to be stored by reference for later use
   // Make sure you call ReferenceFree when you are done with a reference
   virtual int ReferenceCreate() = 0;
@@ -203,14 +220,15 @@ public:
   virtual const char *GetTypeName(int iType) = 0;
 
 #ifndef GMOD_ALLOW_DEPRECATED
-private:
+protected:
 #endif
   // Deprecated: Use CreateMetaTable
   virtual void CreateMetaTableType(const char *strName, int iType) = 0;
 
 public:
   // Like Get* but throws errors and returns if they're not of the expected type
-  // If these functions error, any local C values will not have their destructors called!
+  // If these functions error, any local C values will not have their
+  // destructors called!
   virtual const char *CheckString(int iStackPos = -1) = 0;
   virtual double CheckNumber(int iStackPos = -1) = 0;
 
@@ -250,24 +268,47 @@ public:
   virtual void SetUserType(int iStackPos, void *data) = 0;
 
   // Returns the data of the UserType at iStackPos if it is of the given type
-  template <class T>
-  T *GetUserType(int iStackPos, int iType)
-  {
-    UserData *ud = (UserData *)GetUserdata(iStackPos);
+  template <class T> T *GetUserType(int iStackPos, int iType) {
+    auto *ud = static_cast<UserData *>(GetUserdata(iStackPos));
 
-    if (ud == NULL || ud->data == NULL || ud->type != iType)
-      return NULL;
+    if (ud == nullptr || ud->data == nullptr || ud->type != iType)
+      return nullptr;
 
-    return reinterpret_cast<T *>(ud->data);
+    return static_cast<T *>(ud->data);
+  }
+
+  // Creates a new UserData with your own data embedded within it
+  template <class T> void PushUserType_Value(const T &val, int iType) {
+    using UserData_T = UserData_Value<T>;
+
+    // The UserData allocated by CLuaInterface is only guaranteed to have a data
+    // alignment of 8
+    static_assert(
+        std::alignment_of<UserData_T>::value <= 8,
+        "PushUserType_Value given type with unsupported alignment requirement");
+
+    // Don't give this function objects that can't be trivially destructed
+    // You could ignore this limitation if you implement object destruction in
+    // `__gc`
+    static_assert(
+        std::is_trivially_destructible<UserData_T>::value,
+        "PushUserType_Value given type that is not trivially destructible");
+
+    auto *ud = static_cast<UserData_T *>(NewUserdata(sizeof(UserData_T)));
+    ud->data = new (&ud->value) T(val);
+    ud->type = iType;
+
+    // Set the metatable
+    if (PushMetaTable(iType))
+      SetMetaTable(-2);
   }
 };
 
 // For use with ILuaBase::PushSpecial
-enum
-{
+enum {
   SPECIAL_GLOB, // Global table
   SPECIAL_ENV,  // Environment table
-  SPECIAL_REG   // Registry table
+  SPECIAL_REG,  // Registry table
 };
 } // namespace Lua
 } // namespace GarrysMod
