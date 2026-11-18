@@ -2,6 +2,9 @@
 A simple file i/o library for Garry's Mod written in ANSI C.
 
 ## Installing
+In a gamemode project that fpkg manages, such as a Flux schema, run `fpkg add gmsv_file`, or let the module arrive as a dependency of another package. `fpkg install` copies the modules to `garrysmod/lua/bin` of your server, when it runs inside the server folder or is given `--server <server folder>`.
+
+Without fpkg:
 1. Go to the "Releases" of this GitHub repository.
 2. Download the latest `.dll` file for your platform (see the table below).
 3. Copy that file to `garrysmod/lua/bin` of your server.
@@ -21,6 +24,14 @@ A simple file i/o library for Garry's Mod written in ANSI C.
 Building the `x86` configuration on a 64-bit Linux host requires a multilib toolchain (e.g. `gcc-multilib` and `g++-multilib` on Debian/Ubuntu).
 
 Alternatively, if you have Docker installed, just run `./build.sh`. It builds the binaries for all four platforms in a container, with no other tools needed on your machine, and places them in the `gmsv_file/bin` folder.
+
+## Publishing to fpkg
+1. Run `./build.sh`. It writes all four binaries to `gmsv_file/bin`, the binaries folder that `packagespec.lua` names.
+2. Bump `s.version` in `packagespec.lua`.
+3. Run `fpkg check`, then `fpkg pack --list` to see what ships: `packagespec.lua`, this README, the license and the four binaries.
+4. Run `fpkg publish`.
+
+To use a local build in a gamemode project, run `fpkg link <path to this checkout>` there, followed by `fpkg install`.
 
 ## Using
 The module provides barebones functionality for file manipulation. It's being worked on, more features are coming soon!

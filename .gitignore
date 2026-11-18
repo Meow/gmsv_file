@@ -10,3 +10,4 @@ gmsv_file/project/
 *.vcproj 
 *.filters
 *.user
+target/

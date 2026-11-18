@@ -1,0 +1,8 @@
+# The package holds the spec, the readme, the license and the binaries only.
+/*
+!/packagespec.lua
+!/README.md
+!/LICENSE
+!/gmsv_file/
+/gmsv_file/*
+!/gmsv_file/bin/
